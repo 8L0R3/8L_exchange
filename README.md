@@ -24,10 +24,16 @@ qb-core / qb-menu / oxmysql / qb-vehiclekeys / qb-target
 
 <p>2. Edit shared/config.lua</p>
 
-<p>3. Edit server.cfg</p>
+<p>3. Edit client/menu.lua</p>
+
+```
+Change label menu : function OpenMainMenu()
+```
+
+<p>4. Edit server.cfg</p>
 
 ```
 ensure 8L_exchange
 ```
 
-<p>4. Reboot your FxServer</p>
+<p>5. Reboot your FxServer</p>

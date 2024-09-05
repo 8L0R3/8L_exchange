@@ -1,6 +1,5 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
--- Create a ped at the location specified in config.lua
 Citizen.CreateThread(function()
     local pedModel = Config.Ped.model
     local pedPosition = Config.Ped.position
@@ -16,7 +15,6 @@ Citizen.CreateThread(function()
     SetEntityInvincible(ped, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
 
-    -- Add the ped as an interactive target
     exports['qb-target']:AddTargetEntity(ped, {
         options = {
             {
@@ -30,7 +28,7 @@ Citizen.CreateThread(function()
     })
 end)
 
--- Opening the main menu when interacting with the ped
+
 RegisterNetEvent('8L0R3_Store:openMainMenu')
 AddEventHandler('8L0R3_Store:openMainMenu', function()
     OpenMainMenu()
@@ -38,11 +36,13 @@ end)
 
 RegisterNetEvent('8L0R3_Store:attemptVehicleExchange')
 AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
+    print(Lang:t("debug_veh"), vehicleKey)  
     TriggerServerEvent('8L0R3_Store:attemptVehicleExchange', vehicleKey)
 end)
 
 RegisterNetEvent('8L0R3_Store:attemptItemExchange')
 AddEventHandler('8L0R3_Store:attemptItemExchange', function(tradeKey)
+    print(Lang:t("debug_item"), tradeKey)
     TriggerServerEvent('8L0R3_Store:attemptItemExchange', tradeKey)
 end)
 

@@ -2,12 +2,14 @@ fx_version 'cerulean'
 game 'gta5'
 
 name '8L_Exchange'
-description 'Exchange menu item and vehicle for QBCore'
+description 'Exchange menu item & vehicle for QBCore'
 author '8L0RE'
-version '1.5.2'
+version '1.6.0'
+repository 'https://github.com/8L0R3/8L_exchange'
 
 shared_scripts {
-    'shared/config.lua'
+    'shared/config.lua',
+    '@qb-core/shared/locale.lua'
 }
 
 client_scripts {

@@ -1,21 +1,34 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
+function GetPlayerCoinCount()
+    local playerData = QBCore.Functions.GetPlayerData()
+    local coinItem = playerData.items and playerData.items["coin"] or nil
+    local coinCount = 0
+
+    if coinItem then
+        coinCount = coinItem.amount
+    end
+
+    return coinCount
+end
+
 function OpenMainMenu()
+    local coinCount = GetPlayerCoinCount()
     local menuOptions = {
         {
-            header = "NAME OF YOUR SERVER",
-            txt = "DESC.",
-            isMenuHeader = true  -- Prevent clicking on this item
+            header = "Server Name",
+            txt = "Desc.",
+            isMenuHeader = true
         },
         {
-            header = "First Submenu",
+            header = "Option 1",
             txt = "Desc",
             params = {
                 event = "8L0R3_Store:openVehicleTradeMenu"
             }
         },
         {
-            header = "2e Submenu",
+            header = "Option 2",
             txt = "Desc",
             params = {
                 event = "8L0R3_Store:openItemTradeMenu"
@@ -32,7 +45,7 @@ function OpenVehicleTradeMenu()
     for vehicleKey, vehicleConfig in pairs(Config.VehicleTrades) do
         local option = {
             header = '- ' .. vehicleConfig.label,
-            txt = 'Required : ' .. GetRequiredItemsText(vehicleConfig.itemsRequired),
+            txt = Lang:t("required")..' ' .. GetRequiredItemsText(vehicleConfig.itemsRequired),
             params = {
                 event = '8L0R3_Store:attemptVehicleExchange',
                 args = vehicleKey
@@ -50,7 +63,7 @@ function OpenItemTradeMenu()
     for tradeKey, tradeConfig in pairs(Config.ItemTrades) do
         local option = {
             header = '' .. tradeConfig.rewardAmount .. 'x ' .. tradeConfig.label,
-            txt = 'Required : ' .. GetRequiredItemsText(tradeConfig.itemsRequired),
+            txt = Lang:t("required")..' ' .. GetRequiredItemsText(tradeConfig.itemsRequired),
             params = {
                 event = '8L0R3_Store:attemptItemExchange',
                 args = tradeKey
@@ -70,19 +83,19 @@ function GetRequiredItemsText(itemsRequired)
     return text:sub(1, -3)
 end
 
--- Opening the main menu when interacting with the ped
+
 RegisterNetEvent('8L0R3_Store:openMainMenu')
 AddEventHandler('8L0R3_Store:openMainMenu', function()
     OpenMainMenu()
 end)
 
--- Opening the vehicle exchange submenu
+
 RegisterNetEvent('8L0R3_Store:openVehicleTradeMenu')
 AddEventHandler('8L0R3_Store:openVehicleTradeMenu', function()
     OpenVehicleTradeMenu()
 end)
 
--- Opening the item exchange submenu
+
 RegisterNetEvent('8L0R3_Store:openItemTradeMenu')
 AddEventHandler('8L0R3_Store:openItemTradeMenu', function()
     OpenItemTradeMenu()

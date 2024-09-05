@@ -13,6 +13,7 @@ Here're some of the project's best features:
 *   Everything is configurable
 *   automatic plate generation
 *   Vehicles are stored in the database
+*   Translation available : EN / FR / ES
 
 <h2>🛠️ Installation Steps:</h2>
 

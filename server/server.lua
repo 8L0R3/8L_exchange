@@ -1,18 +1,19 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Loading...')
+local language = GetConvar('qb_locale')
+print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Loading script...')
+print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Loading language : ( '..language..' ) ...')
 Citizen.Wait(2500)
-print('[^4Script^7][^6LUA^7][^18L_Exchange^7] as been loaded. Welcome')
-print('[^4Script^7][^6LUA^7][^18L_Exchange^7] script made by 8L0R3 for QBCore')
+print('[^4Script^7][^6LUA^7][^18L_Exchange^7] '.. Lang:t("script_loaded") .."")
 
 function SendDiscordWebhook(message)
     local webhook = Config.DiscordWebhook
     if webhook == "" then return end
 
     PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({
-        username = "[8L_Exchange] Store",
+        username = "[8L_Exchange]",
         embeds = {{
             color = 3447003,
-            title = "New Trade",
+            title = "LOGS",
             description = message,
             footer = {
                 text = os.date("%Y-%m-%d %H:%M:%S")
@@ -21,7 +22,6 @@ function SendDiscordWebhook(message)
     }), { ['Content-Type'] = 'application/json' })
 end
 
--- Function to generate a unique 7 character license plate
 function GetRandomPlate()
     local letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     local numbers = "0123456789"
@@ -37,7 +37,7 @@ function GetRandomPlate()
 
     if #plate > 7 then
         plate = plate:sub(1, 7)
-    end 
+    end
     return string.upper(plate)
 end
 
@@ -60,10 +60,10 @@ local function generateUniquePlate()
     return plate
 end
 
--- Function to manage the exchange of items for vehicles
+
 RegisterServerEvent('8L0R3_Store:attemptVehicleExchange')
 AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
-    print("[^4Script^7][^6LUA^7][^18L_Exchange^7] Server event received for vehicle exchange :", vehicleKey)
+    print("[^4Script^7][^6LUA^7][^18L_Exchange^7] "..Lang:t("debug_veh_event"), vehicleKey)  -- Débogage
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local playerLicense = Player.PlayerData.license
@@ -77,7 +77,7 @@ AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
 
         local hasAllItems = true
 
-        -- Verification of required items
+        
         for itemName, requiredQuantity in pairs(vehicleConfig.itemsRequired) do
             local playerItem = Player.Functions.GetItemByName(itemName)
             if not playerItem or playerItem.amount < requiredQuantity then
@@ -87,12 +87,12 @@ AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
         end
 
         if hasAllItems then
-            -- Remove required items
+            
             for itemName, requiredQuantity in pairs(vehicleConfig.itemsRequired) do
                 Player.Functions.RemoveItem(itemName, requiredQuantity)
             end
 
-            -- Insert the vehicle into the database
+            
             local query = [[
                 INSERT INTO player_vehicles (
                     license, citizenid, vehicle, hash, mods, plate, fakeplate, garage, fuel, engine, body, state, depotprice,
@@ -107,10 +107,10 @@ AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
                 ['@citizenid'] = playerCitizenID,
                 ['@vehicle'] = vehicleToInsert,
                 ['@hash'] = vehicleHash,
-                ['@mods'] = '{}',
+                ['@mods'] = 'default',
                 ['@plate'] = plate,
-                ['@fakeplate'] = 'nil',
-                ['@garage'] = 'store',             -- Name of your main garage
+                ['@fakeplate'] = 'default',
+                ['@garage'] = 'boutique',
                 ['@fuel'] = 100,
                 ['@engine'] = 1000,
                 ['@body'] = 1000,
@@ -127,25 +127,24 @@ AddEventHandler('8L0R3_Store:attemptVehicleExchange', function(vehicleKey)
             MySQL.Async.execute(query, parameters, function(rowsChanged)
                 if rowsChanged > 0 then
                     TriggerClientEvent('vehiclekeys:client:SetOwner', src, plate)
-                    TriggerClientEvent('QBCore:Notify', src, 'Successful exchange : the vehicle ' .. vehicleToInsert .. ' has been added to your account.', 'success')
-					local message = "Player **" .. GetPlayerName(src) .. "** exchanged item for one **" .. vehicleConfig.vehicle .. "** with plate **" .. plate .. "**."
+                    TriggerClientEvent('QBCore:Notify', src, Lang:t("veh_success")..' ' .. vehicleToInsert .. ' '..Lang:t("veh_success_2"), 'success')
+					local message = Lang:t("player")" **" .. GetPlayerName(src) .. "** "..Lang:t("buy").." **" .. vehicleConfig.vehicle .. "** "..Lang:t("plate").." **" .. plate .. "**."
                     SendDiscordWebhook(message)
-                    print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Purchase of ^1' .. vehicleConfig.vehicle .. '^7 by the player ^1' .. GetPlayerName(src) .. '^7 (plate : ^1' .. plate .. '^7 )')
+                    print('[^4Script^7][^6LUA^7][^18L_Exchange^7] '..Lang:t("purchase")..' ^1' .. vehicleConfig.vehicle .. '^7 '..Lang:t("by_player")..' ^1' .. GetPlayerName(src) .. '^7 ('..Lang:t("plate")..' : ^1' .. plate .. '^7 )')
                 else
-                    TriggerClientEvent('QBCore:Notify', src, 'Error adding vehicle to your account.', 'error')
-                    print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Player ^1' .. GetPlayerName(src) .. '^7 had an error while adding his vehicle. ( ^1' .. vehicleConfig.label .. '^7 )')
+                    TriggerClientEvent('QBCore:Notify', src, Lang:t("veh_error"), 'error')
+                    print('[^4Script^7][^6LUA^7][^18L_Exchange^7] '..Lang:t("player")..'^1' .. GetPlayerName(src) .. '^7 '..Lang:t("veh_error")..' ( ^1' .. vehicleConfig.vehicle .. '^7 )')
                 end
             end)
         else
-            TriggerClientEvent('QBCore:Notify', src, 'You do not have the items needed for this exchange.', 'error')
-            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] ^1' .. GetPlayerName(src) .. '^7 does not have enough money for his purchase')
+            TriggerClientEvent('QBCore:Notify', src, Lang:t("no_coin"), 'error')
+            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] ^1' .. GetPlayerName(src) .. '^7 '..Lang:t("debug_no_coin"))
         end
     else
-        TriggerClientEvent('QBCore:Notify', src, 'Invalid exchange.', 'error')
+        TriggerClientEvent('QBCore:Notify', src, Lang:t("invalid"), 'error')
     end
 end)
 
--- Function to manage the exchange of items for other items
 RegisterServerEvent('8L0R3_Store:attemptItemExchange')
 AddEventHandler('8L0R3_Store:attemptItemExchange', function(tradeKey)
     local src = source
@@ -155,7 +154,6 @@ AddEventHandler('8L0R3_Store:attemptItemExchange', function(tradeKey)
     if tradeConfig then
         local hasAllItems = true
 
-        -- Verification of required items
         for itemName, requiredQuantity in pairs(tradeConfig.itemsRequired) do
             local playerItem = Player.Functions.GetItemByName(itemName)
             if not playerItem or playerItem.amount < requiredQuantity then
@@ -165,24 +163,21 @@ AddEventHandler('8L0R3_Store:attemptItemExchange', function(tradeKey)
         end
 
         if hasAllItems then
-            -- Remove required items
             for itemName, requiredQuantity in pairs(tradeConfig.itemsRequired) do
                 Player.Functions.RemoveItem(itemName, requiredQuantity)
             end
 
-            -- Give the reward item
             Player.Functions.AddItem(tradeConfig.rewardItem, tradeConfig.rewardAmount)
 
-            -- Success notification
-            TriggerClientEvent('QBCore:Notify', src, 'Successful exchange : you received ' .. tradeConfig.rewardAmount .. 'x ' .. tradeConfig.rewardItem .. '.', 'success')
-            local message = "Player **" .. GetPlayerName(src) .. "** exchanged items for **" .. tradeConfig.rewardAmount .. "x " .. tradeConfig.rewardItem .. "**."
+            TriggerClientEvent('QBCore:Notify', src, Lang:t("item_success")..' ' .. tradeConfig.rewardAmount .. 'x ' .. tradeConfig.rewardItem .. '.', 'success')
+            local message = Lang:t("player").." **" .. GetPlayerName(src) .. "** "..Lang:t("buy").." **" .. tradeConfig.rewardAmount .. "x " .. tradeConfig.rewardItem .. "**."
             SendDiscordWebhook(message)
-            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Player ^1' .. GetPlayerName(src) .. '^7 to buy the item ^1' .. tradeConfig.rewardItem .. '^7 ')
+            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] '..Lang:t("player")..' ^1' .. GetPlayerName(src) .. '^7 '..Lang:t("buy")..'^1' .. tradeConfig.rewardItem .. '^7 ')
         else
-            TriggerClientEvent('QBCore:Notify', src, 'You do not have the coins needed for this exchange.', 'error')
-            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] Player ^1' .. GetPlayerName(src) .. '^7 does not have enough coins to purchase ')
+            TriggerClientEvent('QBCore:Notify', src, Lang:t("no_coin"), 'error')
+            print('[^4Script^7][^6LUA^7][^18L_Exchange^7] '..Lang:t("player")..' ^1' .. GetPlayerName(src) .. '^7 '..Lang:t("debug_no_coin"))
         end
     else
-        TriggerClientEvent('QBCore:Notify', src, 'Invalid exchange.', 'error')
+        TriggerClientEvent('QBCore:Notify', src, Lang:t("invalid"), 'error')
     end
 end)
